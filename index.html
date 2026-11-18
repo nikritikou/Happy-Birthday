@@ -1,35 +1,45 @@
 
 <!DOCTYPE html>
 <html lang="el">
+
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 
 <title>Michaela's Album</title>
 
 <script src="https://unpkg.com/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
 
 <style>
+
 * {
   box-sizing: border-box;
 }
 
 html, body {
   margin: 0;
+  padding: 0;
   width: 100%;
   height: 100%;
   overflow: hidden;
+  background: #eeeeee;
 }
 
 body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #eeeeee;
 }
 
 #book {
-  margin: auto;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .page {
@@ -43,6 +53,7 @@ body {
   display: block;
   object-fit: contain;
 }
+
 </style>
 </head>
 
@@ -120,18 +131,42 @@ body {
 
 const bookElement = document.getElementById("book");
 
+function getBookDimensions() {
+
+  const screenWidth = window.innerWidth;
+  const screenHeight = window.innerHeight;
+
+  // Κάθε σελίδα καταλαμβάνει το μισό διαθέσιμο πλάτος.
+  const pageWidth = Math.min(
+    screenWidth / 2,
+    screenHeight * 0.707
+  );
+
+  const pageHeight = Math.min(
+    screenHeight,
+    pageWidth * 1.414
+  );
+
+  return {
+    width: Math.floor(pageWidth),
+    height: Math.floor(pageHeight)
+  };
+}
+
+const dimensions = getBookDimensions();
+
 const book = new St.PageFlip(bookElement, {
 
-  width: 420,
-  height: 594,
+  width: dimensions.width,
+  height: dimensions.height,
 
   size: "stretch",
 
-  minWidth: 280,
-  maxWidth: 840,
+  minWidth: 100,
+  maxWidth: 2000,
 
-  minHeight: 396,
-  maxHeight: 1188,
+  minHeight: 150,
+  maxHeight: 2000,
 
   showCover: true,
 
@@ -141,7 +176,7 @@ const book = new St.PageFlip(bookElement, {
 
   maxShadowOpacity: 0.3,
 
-  mobileScrollSupport: true,
+  mobileScrollSupport: false,
 
   autoSize: true,
 
@@ -152,6 +187,21 @@ const book = new St.PageFlip(bookElement, {
 book.loadFromHTML(
   document.querySelectorAll(".page")
 );
+
+// Διατήρηση δύο σελίδων κατά την αλλαγή μεγέθους οθόνης.
+window.addEventListener("resize", () => {
+
+  const newDimensions = getBookDimensions();
+
+  book.updateFromHtml(
+    document.querySelectorAll(".page"),
+    {
+      width: newDimensions.width,
+      height: newDimensions.height
+    }
+  );
+
+});
 
 </script>
 

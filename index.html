@@ -3,7 +3,7 @@
 <html lang="el">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 <title>Once Upon a Time - 27 Years of Michaela</title>
 
@@ -12,20 +12,23 @@
 <style>
 * {
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
 }
 
 html, body {
     margin: 0;
+    padding: 0;
     width: 100%;
     height: 100%;
+    overflow: hidden;
 }
 
 body {
     background: #292929;
     display: flex;
-    justify-content: center;
     align-items: center;
-    overflow: hidden;
+    justify-content: center;
+    touch-action: manipulation;
 }
 
 #book-container {
@@ -52,10 +55,7 @@ body {
     object-fit: contain;
     user-select: none;
     -webkit-user-drag: none;
-}
-
-.blank-page {
-    background: #292929;
+    pointer-events: none;
 }
 
 </style>
@@ -69,9 +69,9 @@ body {
 
 <script>
 
-// ==================================
-// ΣΕΙΡΑ ΕΙΚΟΝΩΝ
-// ==================================
+// ======================================
+// ΕΙΚΟΝΕΣ ΒΙΒΛΙΟΥ
+// ======================================
 
 const images = [
     "images/cover.png",
@@ -92,11 +92,11 @@ const images = [
     "images/end.png"
 ];
 
-const bookElement = document.getElementById("book");
-
-// ==================================
+// ======================================
 // ΔΗΜΙΟΥΡΓΙΑ ΣΕΛΙΔΩΝ
-// ==================================
+// ======================================
+
+const bookElement = document.getElementById("book");
 
 images.forEach((src, index) => {
 
@@ -106,12 +106,11 @@ images.forEach((src, index) => {
     const img = document.createElement("img");
 
     img.src = src;
-    img.alt = "Σελίδα " + index;
+    img.alt = "Σελίδα " + (index + 1);
     img.draggable = false;
 
-    img.onerror = function() {
-        console.error("Δεν βρέθηκε η εικόνα:", src);
-        this.alt = "Δεν βρέθηκε: " + src;
+    img.onerror = () => {
+        console.error("Δεν βρέθηκε εικόνα:", src);
     };
 
     page.appendChild(img);
@@ -119,18 +118,18 @@ images.forEach((src, index) => {
 
 });
 
-// ==================================
+// ======================================
 // ΚΕΝΟ ΟΠΙΣΘΟΦΥΛΛΟ
-// ==================================
+// ======================================
 
 const backCover = document.createElement("div");
-backCover.className = "page blank-page";
+backCover.className = "page";
 
 bookElement.appendChild(backCover);
 
-// ==================================
-// ΔΗΜΙΟΥΡΓΙΑ FLIPBOOK
-// ==================================
+// ======================================
+// ΔΗΜΙΟΥΡΓΙΑ ΒΙΒΛΙΟΥ
+// ======================================
 
 const flipBook = new St.PageFlip(bookElement, {
 
@@ -149,13 +148,11 @@ const flipBook = new St.PageFlip(bookElement, {
 
     showCover: true,
 
-    usePortrait: true,
-
-    flippingTime: 1000,
-
-    drawShadow: true,
+    flippingTime: 850,
 
     maxShadowOpacity: 0.6,
+
+    drawShadow: true,
 
     useMouseEvents: true,
 
@@ -163,19 +160,67 @@ const flipBook = new St.PageFlip(bookElement, {
 
     clickEventForward: true,
 
-    showPageCorners: true,
-
-    disableFlipByClick: false
+    showPageCorners: false
 
 });
 
-// ==================================
+// ======================================
 // ΦΟΡΤΩΣΗ ΒΙΒΛΙΟΥ
-// ==================================
+// ======================================
 
 flipBook.loadFromHTML(
     document.querySelectorAll(".page")
 );
+
+// ======================================
+// ΕΝΑ ΠΑΤΗΜΑ ΓΙΑ ΞΕΦΥΛΛΙΣΜΑ
+// ======================================
+
+let startX = 0;
+let startY = 0;
+let moved = false;
+let startTime = 0;
+
+bookElement.addEventListener("touchstart", function(e) {
+
+    if (e.touches.length !== 1) return;
+
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+
+    startTime = Date.now();
+    moved = false;
+
+}, { passive: true });
+
+bookElement.addEventListener("touchmove", function(e) {
+
+    if (e.touches.length !== 1) return;
+
+    const dx = Math.abs(e.touches[0].clientX - startX);
+    const dy = Math.abs(e.touches[0].clientY - startY);
+
+    if (dx > 12 || dy > 12) {
+        moved = true;
+    }
+
+}, { passive: true });
+
+bookElement.addEventListener("touchend", function(e) {
+
+    if (moved || Date.now() - startTime > 500) return;
+
+    const rect = bookElement.getBoundingClientRect();
+
+    const x = startX - rect.left;
+
+    if (x > rect.width / 2) {
+        flipBook.flipNext();
+    } else {
+        flipBook.flipPrev();
+    }
+
+}, { passive: true });
 
 </script>
 

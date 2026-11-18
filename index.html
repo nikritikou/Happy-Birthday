@@ -4,6 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Το Ψηφιακό μου Βιβλίο</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/page-flip/2.0.7/js/page-flip.browser.min.js"></script>
@@ -15,43 +16,30 @@
 
 body {
     margin: 0;
+    padding: 0;
     background: #292929;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
-    font-family: Arial, sans-serif;
+    height: 100vh;
     overflow: hidden;
+    font-family: Arial, sans-serif;
 }
 
 #book {
     margin: auto;
 }
 
-.controls {
-    position: fixed;
-    bottom: 20px;
-    display: flex;
-    gap: 20px;
-    align-items: center;
+.page {
+    background: white;
+    overflow: hidden;
 }
 
-button {
-    background: #ffffff;
-    border: none;
-    padding: 12px 22px;
-    border-radius: 6px;
-    font-size: 17px;
-    cursor: pointer;
-}
-
-button:hover {
-    background: #dddddd;
-}
-
-#page-number {
-    color: white;
-    font-size: 15px;
+.page img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
 }
 
 </style>
@@ -61,13 +49,9 @@ button:hover {
 
 <div id="book"></div>
 
-<div class="controls">
-    <button onclick="flipBook.flipPrev()">❮</button>
-    <span id="page-number">1 / 18</span>
-    <button onclick="flipBook.flipNext()">❯</button>
-</div>
-
 <script>
+
+// ΣΕΙΡΑ ΕΙΚΟΝΩΝ
 
 const images = [
     "cover.png",
@@ -89,40 +73,77 @@ const images = [
     "end.png"
 ];
 
+// ΔΗΜΙΟΥΡΓΙΑ ΣΕΛΙΔΩΝ
+
 const book = document.getElementById("book");
 
-images.forEach((image, index) => {
+images.forEach(image => {
+
     const page = document.createElement("div");
     page.className = "page";
 
     const img = document.createElement("img");
     img.src = image;
-    img.style.width = "100%";
-    img.style.height = "100%";
-    img.style.objectFit = "contain";
+    img.alt = "Σελίδα βιβλίου";
 
     page.appendChild(img);
     book.appendChild(page);
+
 });
+
+// ΔΗΜΙΟΥΡΓΙΑ ΒΙΒΛΙΟΥ
 
 const flipBook = new St.PageFlip(book, {
+
     width: 400,
     height: 560,
+
     size: "stretch",
+
     minWidth: 280,
     maxWidth: 800,
+
     minHeight: 400,
     maxHeight: 1000,
-    maxShadowOpacity: 0.5,
+
+    maxShadowOpacity: 0.6,
+
     showCover: true,
-    mobileScrollSupport: false
+
+    mobileScrollSupport: false,
+
+    flippingTime: 900,
+
+    useMouseEvents: true,
+
+    clickEventForward: true
+
 });
 
-flipBook.loadFromHTML(document.querySelectorAll(".page"));
+// ΦΟΡΤΩΣΗ ΣΕΛΙΔΩΝ
 
-flipBook.on("flip", (e) => {
-    document.getElementById("page-number").textContent =
-        (e.data + 1) + " / " + images.length;
+flipBook.loadFromHTML(
+    document.querySelectorAll(".page")
+);
+
+// ΚΛΙΚ ΣΤΙΣ ΣΕΛΙΔΕΣ
+
+book.addEventListener("click", function(e) {
+
+    const rect = book.getBoundingClientRect();
+
+    const x = e.clientX - rect.left;
+
+    if (x > rect.width / 2) {
+
+        flipBook.flipNext();
+
+    } else {
+
+        flipBook.flipPrev();
+
+    }
+
 });
 
 </script>

@@ -1,41 +1,138 @@
+
 <!DOCTYPE html>
 <html lang="el">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Michaela's Album</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
-<script src="https://unpkg.com/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
+<title>Michaela's Album</title>
 
 <style>
 * {
   box-sizing: border-box;
 }
 
-body {
+html, body {
   margin: 0;
-  min-height: 100vh;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #eeeeee;
+}
+
+body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #eeeeee;
-  overflow: hidden;
 }
 
 #book {
-  margin: auto;
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  perspective: 1800px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#spread {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  width: 100%;
+  height: 100%;
 }
 
 .page {
+  position: relative;
+  width: 50%;
+  height: 100%;
   background: white;
   overflow: hidden;
 }
 
 .page img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+#turnSheet {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 50%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transform-origin: left center;
+  display: none;
+  z-index: 5;
+}
+
+#turnSheet.cover-static {
+  display: block;
+  transform: none;
+}
+
+#turnSheet.turn-forward {
+  display: block;
+  transform-origin: left center;
+  animation: flipForward 850ms ease-in-out forwards;
+}
+
+#turnSheet.turn-backward {
+  display: block;
+  left: 0;
+  right: auto;
+  transform-origin: right center;
+  animation: flipBackward 850ms ease-in-out forwards;
+}
+
+.sheet-face {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: white;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.sheet-face img {
   width: 100%;
   height: 100%;
   display: block;
   object-fit: contain;
+  pointer-events: none;
+}
+
+.sheet-back {
+  transform: rotateY(180deg);
+}
+
+@keyframes flipForward {
+  from {
+    transform: rotateY(0deg);
+  }
+  to {
+    transform: rotateY(-180deg);
+  }
+}
+
+@keyframes flipBackward {
+  from {
+    transform: rotateY(0deg);
+  }
+  to {
+    transform: rotateY(180deg);
+  }
 }
 </style>
 </head>
@@ -44,95 +141,282 @@ body {
 
 <div id="book">
 
-  <div class="page" data-density="hard">
-    <img src="images/cover.png" alt="Cover">
+  <div id="spread">
+    <div class="page">
+      <img id="leftPage" alt="Left page">
+    </div>
+
+    <div class="page">
+      <img id="rightPage" alt="Right page">
+    </div>
   </div>
 
-  <div class="page">
-    <img src="images/1.png" alt="Page 1">
-  </div>
+  <div id="turnSheet" class="cover-static">
 
-  <div class="page">
-    <img src="images/2.png" alt="Page 2">
-  </div>
+    <div class="sheet-face sheet-front">
+      <img id="frontImage" src="images/cover.png" alt="Cover">
+    </div>
 
-  <div class="page">
-    <img src="images/3.png" alt="Page 3">
-  </div>
+    <div class="sheet-face sheet-back">
+      <img id="backImage" src="images/1.png" alt="Back">
+    </div>
 
-  <div class="page">
-    <img src="images/4.png" alt="Page 4">
-  </div>
-
-  <div class="page">
-    <img src="images/5.png" alt="Page 5">
-  </div>
-
-  <div class="page">
-    <img src="images/6.png" alt="Page 6">
-  </div>
-
-  <div class="page">
-    <img src="images/7.png" alt="Page 7">
-  </div>
-
-  <div class="page">
-    <img src="images/8.png" alt="Page 8">
-  </div>
-
-  <div class="page">
-    <img src="images/9.png" alt="Page 9">
-  </div>
-
-  <div class="page">
-    <img src="images/10.png" alt="Page 10">
-  </div>
-
-  <div class="page">
-    <img src="images/11.png" alt="Page 11">
-  </div>
-
-  <div class="page">
-    <img src="images/12.png" alt="Page 12">
-  </div>
-
-  <div class="page">
-    <img src="images/13.png" alt="Page 13">
-  </div>
-
-  <div class="page">
-    <img src="images/14.png" alt="Page 14">
-  </div>
-
-  <div class="page" data-density="hard">
-    <img src="images/end.png" alt="Back cover">
   </div>
 
 </div>
 
 <script>
-const bookElement = document.getElementById("book");
+const pages = [
+  "images/1.png",
+  "images/2.png",
+  "images/3.png",
+  "images/4.png",
+  "images/5.png",
+  "images/6.png",
+  "images/7.png",
+  "images/8.png",
+  "images/9.png",
+  "images/10.png",
+  "images/11.png",
+  "images/12.png",
+  "images/13.png",
+  "images/14.png"
+];
 
-const book = new St.PageFlip(bookElement, {
-  width: 420,
-  height: 594,
-  size: "stretch",
-  minWidth: 280,
-  maxWidth: 840,
-  minHeight: 396,
-  maxHeight: 1188,
-  showCover: true,
-  usePortrait: true,
-  flippingTime: 1000,
-  maxShadowOpacity: 0.3,
-  mobileScrollSupport: true,
-  autoSize: true,
-  drawShadow: true
+const cover = "images/cover.png";
+const endCover = "images/end.png";
+
+const book = document.getElementById("book");
+const spread = document.getElementById("spread");
+const sheet = document.getElementById("turnSheet");
+
+const leftPage = document.getElementById("leftPage");
+const rightPage = document.getElementById("rightPage");
+
+const frontImage = document.getElementById("frontImage");
+const backImage = document.getElementById("backImage");
+
+// -1 = εξώφυλλο
+// 0-6 = δισέλιδες προβολές
+// 7 = οπισθόφυλλο
+
+let current = -1;
+let busy = false;
+let targetState = null;
+
+function setSpread(index) {
+
+  if (index === -1) {
+    spread.style.display = "none";
+    return;
+  }
+
+  spread.style.display = "flex";
+
+  if (index === 7) {
+    leftPage.src = endCover;
+    rightPage.src = "";
+    return;
+  }
+
+  leftPage.src = pages[index * 2];
+  rightPage.src = pages[index * 2 + 1];
+}
+
+function showCover() {
+  current = -1;
+
+  spread.style.display = "none";
+
+  sheet.className = "cover-static";
+  sheet.style.left = "auto";
+  sheet.style.right = "0";
+
+  frontImage.src = cover;
+  backImage.src = pages[0];
+}
+
+function finishFlip() {
+
+  current = targetState;
+  busy = false;
+
+  if (current === -1) {
+    showCover();
+  } else {
+    sheet.className = "";
+    sheet.style.display = "none";
+    sheet.style.left = "auto";
+    sheet.style.right = "0";
+
+    setSpread(current);
+  }
+}
+
+function nextPage() {
+
+  if (busy || current === 7) return;
+
+  busy = true;
+
+  let front;
+  let back;
+  let next;
+
+  if (current === -1) {
+
+    front = cover;
+    back = pages[0];
+    next = 0;
+
+  } else if (current < 6) {
+
+    front = pages[current * 2 + 1];
+    back = pages[(current + 1) * 2];
+    next = current + 1;
+
+  } else {
+
+    front = pages[13];
+    back = endCover;
+    next = 7;
+
+  }
+
+  targetState = next;
+
+  frontImage.src = front;
+  backImage.src = back;
+
+  sheet.style.left = "auto";
+  sheet.style.right = "0";
+
+  if (current === -1) {
+    setSpread(0);
+  } else {
+    setSpread(next);
+  }
+
+  sheet.className = "";
+  sheet.style.display = "block";
+
+  void sheet.offsetWidth;
+
+  sheet.classList.add("turn-forward");
+}
+
+function previousPage() {
+
+  if (busy || current === -1) return;
+
+  busy = true;
+
+  let front;
+  let back;
+  let previous;
+
+  if (current === 0) {
+
+    front = pages[0];
+    back = cover;
+    previous = -1;
+
+  } else if (current === 7) {
+
+    front = endCover;
+    back = pages[13];
+    previous = 6;
+
+  } else {
+
+    front = pages[current * 2];
+    back = pages[current * 2 - 1];
+    previous = current - 1;
+
+  }
+
+  targetState = previous;
+
+  frontImage.src = front;
+  backImage.src = back;
+
+  sheet.style.left = "0";
+  sheet.style.right = "auto";
+
+  if (previous !== -1) {
+    setSpread(previous);
+  }
+
+  sheet.className = "";
+  sheet.style.display = "block";
+
+  void sheet.offsetWidth;
+
+  sheet.classList.add("turn-backward");
+}
+
+sheet.addEventListener("animationend", function(event) {
+  if (
+    event.target === sheet &&
+    (event.animationName === "flipForward" ||
+     event.animationName === "flipBackward")
+  ) {
+    finishFlip();
+  }
 });
 
-book.loadFromHTML(
-  document.querySelectorAll(".page")
-);
+// Άγγιγμα και σύρσιμο
+let startX = 0;
+let startY = 0;
+
+book.addEventListener("pointerdown", function(event) {
+  if (busy) return;
+
+  startX = event.clientX;
+  startY = event.clientY;
+});
+
+book.addEventListener("pointerup", function(event) {
+  if (busy) return;
+
+  const dx = event.clientX - startX;
+  const dy = event.clientY - startY;
+
+  if (Math.abs(dx) > 35 && Math.abs(dx) > Math.abs(dy)) {
+
+    if (dx < 0) {
+      nextPage();
+    } else {
+      previousPage();
+    }
+
+  } else if (Math.abs(dx) < 15 && Math.abs(dy) < 15) {
+
+    if (current === -1) {
+      nextPage();
+    } else if (event.clientX > window.innerWidth / 2) {
+      nextPage();
+    } else {
+      previousPage();
+    }
+
+  }
+});
+
+// Πληκτρολόγιο
+document.addEventListener("keydown", function(event) {
+  if (event.key === "ArrowRight") nextPage();
+  if (event.key === "ArrowLeft") previousPage();
+});
+
+// Αρχική κατάσταση
+showCover();
+
+// Προφόρτωση εικόνων για ομαλό ξεφύλλισμα
+[cover, ...pages, endCover].forEach(function(src) {
+  const img = new Image();
+  img.src = src;
+});
 </script>
 
 </body>

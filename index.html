@@ -14,16 +14,26 @@
     box-sizing: border-box;
 }
 
-body {
+html, body {
     margin: 0;
-    padding: 0;
     width: 100%;
-    height: 100vh;
+    height: 100%;
+}
+
+body {
     background: #292929;
     display: flex;
     justify-content: center;
     align-items: center;
     overflow: hidden;
+}
+
+#book-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 #book {
@@ -36,10 +46,16 @@ body {
 }
 
 .page img {
+    display: block;
     width: 100%;
     height: 100%;
     object-fit: contain;
-    display: block;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.blank-page {
+    background: #292929;
 }
 
 </style>
@@ -47,11 +63,15 @@ body {
 
 <body>
 
-<div id="book"></div>
+<div id="book-container">
+    <div id="book"></div>
+</div>
 
 <script>
 
-// ΟΙ 16 ΕΙΚΟΝΕΣ ΤΟΥ ΒΙΒΛΙΟΥ
+// ==================================
+// ΣΕΙΡΑ ΕΙΚΟΝΩΝ
+// ==================================
 
 const images = [
     "images/cover.png",
@@ -72,26 +92,45 @@ const images = [
     "images/end.png"
 ];
 
-// ΔΗΜΙΟΥΡΓΙΑ ΣΕΛΙΔΩΝ
-
 const bookElement = document.getElementById("book");
 
-images.forEach((src) => {
+// ==================================
+// ΔΗΜΙΟΥΡΓΙΑ ΣΕΛΙΔΩΝ
+// ==================================
+
+images.forEach((src, index) => {
 
     const page = document.createElement("div");
     page.className = "page";
 
     const img = document.createElement("img");
+
     img.src = src;
-    img.alt = "Σελίδα βιβλίου";
+    img.alt = "Σελίδα " + index;
     img.draggable = false;
+
+    img.onerror = function() {
+        console.error("Δεν βρέθηκε η εικόνα:", src);
+        this.alt = "Δεν βρέθηκε: " + src;
+    };
 
     page.appendChild(img);
     bookElement.appendChild(page);
 
 });
 
+// ==================================
+// ΚΕΝΟ ΟΠΙΣΘΟΦΥΛΛΟ
+// ==================================
+
+const backCover = document.createElement("div");
+backCover.className = "page blank-page";
+
+bookElement.appendChild(backCover);
+
+// ==================================
 // ΔΗΜΙΟΥΡΓΙΑ FLIPBOOK
+// ==================================
 
 const flipBook = new St.PageFlip(bookElement, {
 
@@ -101,28 +140,38 @@ const flipBook = new St.PageFlip(bookElement, {
     size: "stretch",
 
     minWidth: 280,
-    maxWidth: 800,
+    maxWidth: 500,
 
     minHeight: 400,
-    maxHeight: 1000,
+    maxHeight: 700,
 
     autoSize: true,
 
     showCover: true,
 
-    maxShadowOpacity: 0.6,
+    usePortrait: true,
 
     flippingTime: 1000,
 
+    drawShadow: true,
+
+    maxShadowOpacity: 0.6,
+
     useMouseEvents: true,
+
+    mobileScrollSupport: false,
 
     clickEventForward: true,
 
-    mobileScrollSupport: false
+    showPageCorners: true,
+
+    disableFlipByClick: false
 
 });
 
-// ΦΟΡΤΩΣΗ ΤΩΝ ΣΕΛΙΔΩΝ
+// ==================================
+// ΦΟΡΤΩΣΗ ΒΙΒΛΙΟΥ
+// ==================================
 
 flipBook.loadFromHTML(
     document.querySelectorAll(".page")
